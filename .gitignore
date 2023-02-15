@@ -1,5 +1,5 @@
 *.class
-.idea/
+.idea
 out/
 *.iml
 target/
