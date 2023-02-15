@@ -17,7 +17,6 @@ public class VotingDAO_DB implements IVotingDao {
     }
 
 
-
     @Override
     public List<SavedVoice> getVoiceList() {
         EntityManager entityManager = null;
@@ -26,12 +25,15 @@ public class VotingDAO_DB implements IVotingDao {
             entityManager = manager.getEntityManager();
 
             entityManager.getTransaction().begin();
-            savedVoices  = entityManager.createQuery("FROM SavedVoice", SavedVoice.class).getResultList();
+            savedVoices = entityManager.createQuery("FROM SavedVoice", SavedVoice.class).getResultList();
             entityManager.getTransaction().commit();
         } catch (Exception e) {
-            throw new RuntimeException("SQL exception", e.getCause());
+            if (entityManager != null && entityManager.getTransaction().isActive()) {
+                entityManager.getTransaction().rollback();
+            }
+            throw e;
         } finally {
-            if (entityManager != null && entityManager.isOpen()) {
+            if (entityManager != null) {
                 entityManager.close();
             }
         }
@@ -48,18 +50,18 @@ public class VotingDAO_DB implements IVotingDao {
 
             SavedVoice savedVoice = entityManager.find(SavedVoice.class, id);
 
-            if(savedVoice != null) {
+            if (savedVoice != null) {
                 savedVoice.setAuthorization(true);
                 entityManager.merge(savedVoice);
                 entityManager.getTransaction().commit();
-            } else {
-                entityManager.getTransaction().commit();
-                throw new NullPointerException("Update is not possible.");
             }
-        } catch (RuntimeException e) {
-            throw new RuntimeException("DataBase error", e);
+        } catch (Exception e) {
+            if (entityManager != null && entityManager.getTransaction().isActive()) {
+                entityManager.getTransaction().rollback();
+            }
+            throw e;
         } finally {
-            if(entityManager != null) {
+            if (entityManager != null) {
                 entityManager.close();
             }
         }
@@ -76,9 +78,12 @@ public class VotingDAO_DB implements IVotingDao {
             entityManager.getTransaction().commit();
             entityManager.close();
         } catch (Exception e) {
-            throw new RuntimeException("SQL exception", e.getCause());
+            if (entityManager != null && entityManager.getTransaction().isActive()) {
+                entityManager.getTransaction().rollback();
+            }
+            throw e;
         } finally {
-            if (entityManager != null && entityManager.isOpen()) {
+            if (entityManager != null) {
                 entityManager.close();
             }
         }

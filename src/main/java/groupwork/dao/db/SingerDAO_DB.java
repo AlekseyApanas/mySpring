@@ -14,6 +14,7 @@ public class SingerDAO_DB implements ISingerDao {
     public SingerDAO_DB(IManager manager) {
         this.manager = manager;
     }
+
     @Override
     public List<SingerEntity> getSingerList() {
         EntityManager entityManager = null;
@@ -24,10 +25,13 @@ public class SingerDAO_DB implements ISingerDao {
             resultList = entityManager.createQuery("from SingerEntity", SingerEntity.class).getResultList();
             entityManager.getTransaction().commit();
 
-        } catch (RuntimeException e) {
-            throw new RuntimeException("DataBase error", e);
+        } catch (Exception e) {
+            if (entityManager != null && entityManager.getTransaction().isActive()) {
+                entityManager.getTransaction().rollback();
+            }
+            throw e;
         } finally {
-            if(entityManager != null) {
+            if (entityManager != null) {
                 entityManager.close();
             }
         }
@@ -44,14 +48,17 @@ public class SingerDAO_DB implements ISingerDao {
             SingerEntity singerEntity = entityManager.find(SingerEntity.class, id);
             entityManager.getTransaction().commit();
 
-            if(singerEntity != null) {
+            if (singerEntity != null) {
                 result = true;
             }
 
-        } catch (RuntimeException e) {
-            throw new RuntimeException("DataBase error", e);
+        } catch (Exception e) {
+            if (entityManager != null && entityManager.getTransaction().isActive()) {
+                entityManager.getTransaction().rollback();
+            }
+            throw e;
         } finally {
-            if(entityManager != null) {
+            if (entityManager != null) {
                 entityManager.close();
             }
         }
@@ -66,18 +73,18 @@ public class SingerDAO_DB implements ISingerDao {
         try {
             entityManager = manager.getEntityManager();
             entityManager.getTransaction().begin();
-            singerEntity = entityManager.find(SingerEntity.class, id,LockModeType.OPTIMISTIC);
-            if(singerEntity != null) {
+            singerEntity = entityManager.find(SingerEntity.class, id, LockModeType.OPTIMISTIC);
+            if (singerEntity != null) {
                 entityManager.remove(singerEntity);
                 entityManager.getTransaction().commit();
-            } else {
-                entityManager.getTransaction().commit();
-                throw new NullPointerException("Delete is not possible. The singer wasn't found in the database");
             }
-        } catch (RuntimeException e) {
-            throw new RuntimeException("DataBase error", e);
+        } catch (Exception e) {
+            if (entityManager != null && entityManager.getTransaction().isActive()) {
+                entityManager.getTransaction().rollback();
+            }
+            throw e;
         } finally {
-            if(entityManager != null) {
+            if (entityManager != null) {
                 entityManager.close();
             }
         }
@@ -91,10 +98,13 @@ public class SingerDAO_DB implements ISingerDao {
             entityManager.getTransaction().begin();
             entityManager.persist(singerEntity);
             entityManager.getTransaction().commit();
-        } catch (RuntimeException e) {
-            throw new RuntimeException("DataBase error", e);
+        } catch (Exception e) {
+            if (entityManager != null && entityManager.getTransaction().isActive()) {
+                entityManager.getTransaction().rollback();
+            }
+            throw e;
         } finally {
-            if(entityManager != null) {
+            if (entityManager != null) {
                 entityManager.close();
             }
         }
@@ -110,21 +120,22 @@ public class SingerDAO_DB implements ISingerDao {
 
             SingerEntity singerEntityDB = entityManager.find(SingerEntity.class, id, LockModeType.OPTIMISTIC);
 
-            if(singerEntityDB != null) {
+            if (singerEntityDB != null) {
                 entityManager.merge(singerEntity);
                 entityManager.getTransaction().commit();
-            } else {
-                entityManager.getTransaction().commit();
-                throw new NullPointerException("Update is not possible. The singer wasn't found in the database");
             }
-        } catch (RuntimeException e) {
-            throw new RuntimeException("DataBase error", e);
+        } catch (Exception e) {
+            if (entityManager != null && entityManager.getTransaction().isActive()) {
+                entityManager.getTransaction().rollback();
+            }
+            throw e;
         } finally {
-            if(entityManager != null) {
+            if (entityManager != null) {
                 entityManager.close();
             }
         }
     }
+
     @Override
     public SingerEntity get(long id) {
         EntityManager entityManager = null;
@@ -135,14 +146,17 @@ public class SingerDAO_DB implements ISingerDao {
             singerEntity = entityManager.find(SingerEntity.class, id);
             entityManager.getTransaction().commit();
 
-            if(singerEntity == null){
+            if (singerEntity == null) {
                 throw new NullPointerException("The singer wasn't found in the database");
             }
 
-        } catch (RuntimeException e) {
-            throw new RuntimeException("Ошибка БД", e);
+        } catch (Exception e) {
+            if (entityManager != null && entityManager.getTransaction().isActive()) {
+                entityManager.getTransaction().rollback();
+            }
+            throw e;
         } finally {
-            if(entityManager != null) {
+            if (entityManager != null) {
                 entityManager.close();
             }
         }
