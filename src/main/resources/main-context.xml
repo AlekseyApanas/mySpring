@@ -1,0 +1,51 @@
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        https://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <!--  <bean id="helloServiceA" class="service.ServiceA">
+          <constructor-arg index="0" ref="servB"/>
+          <constructor-arg name="password" value="123"/>
+      </bean>
+      <bean id="servB" class="service.ServiceB"/>-->
+
+    <bean id="manager" class="groupwork.dao.orm.manager.Manager"/>
+
+    <bean id="genreDAO" class="groupwork.dao.db.GenreDAO_DB">
+        <constructor-arg index="0" ref="manager"/>
+    </bean>
+
+    <bean id="singerDAO" class="groupwork.dao.db.SingerDAO_DB">
+        <constructor-arg index="0" ref="manager"/>
+    </bean>
+
+    <bean id="votingDAO" class="groupwork.dao.db.VotingDAO_DB">
+        <constructor-arg index="0" ref="manager"/>
+    </bean>
+
+    <bean id="genreService" class="groupwork.service.GenreService">
+        <constructor-arg index="0" ref="genreDAO"/>
+    </bean>
+
+    <bean id="singerService" class="groupwork.service.SingerService">
+        <constructor-arg index="0" ref="singerDAO"/>
+    </bean>
+
+    <bean id="mailService" class="groupwork.service.MailService">
+        <constructor-arg name="singerService" ref="singerService"/>
+        <constructor-arg name="genreService" ref="genreService"/>
+    </bean>
+
+    <bean id="votingService" class="groupwork.service.VoteService">
+        <constructor-arg name="voiceDao" ref="votingDAO"/>
+        <constructor-arg name="singerService" ref="singerService"/>
+        <constructor-arg name="genreService" ref="genreService"/>
+        <constructor-arg name="mailService" ref="mailService"/>
+    </bean>
+
+    <bean id="statisticsService" class="groupwork.service.StatisticsService">
+        <constructor-arg name="iVotesService" ref="votingService"/>
+        <constructor-arg name="iSingerService" ref="singerService"/>
+        <constructor-arg name="iGenreService" ref="genreService"/>
+    </bean>
+</beans>
